@@ -13,18 +13,24 @@ texts = {
     "Deutsch": {
         "upload_prompt": "Bitte laden Sie Ihre Datei hoch (Excel oder CSV)",
         "file_processing": "Die Datei wird verarbeitet...",
-        "error_missing_columns": "Fehler: Die Datei muss die Spalten 'Artikel', 'Menge' und 'Name' enthalten.",
+        "error_missing_columns": "Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.",
         "results": "Ergebnisse",
         "download": "Laden Sie die Ergebnisse herunter",
         "example_file": "Laden Sie eine Beispieldatei herunter",
         "instructions": "Anleitung anzeigen",
         "instructions_text": '''
 ### Anleitung zur Nutzung dieser App
-1. Laden Sie Ihre Verkaufsdaten als Excel- oder CSV-Datei hoch.
-   - Die Datei muss mindestens die Spalten **'Artikel', 'Menge' und 'Name'** enthalten.
-2. Überprüfen Sie die Ergebnisse in der Tabelle.
-3. Laden Sie die Ergebnisse als Excel-Datei herunter.
-4. Wenn Sie eine Beispieldatei benötigen, können Sie diese über die Option in der Seitenleiste herunterladen.
+1. Bereiten Sie Ihre Abverkaufsdaten vor:
+   - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
+   - Sie können die Datei im Excel- oder CSV-Format speichern.
+2. Laden Sie Ihre Datei in die App hoch:
+   - Nutzen Sie die Schaltfläche „Durchsuchen“ und wählen Sie Ihre Datei aus.
+3. Überprüfen Sie die berechneten Ergebnisse:
+   - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
+4. Laden Sie die Ergebnisse herunter:
+   - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
+5. Beispiel:
+   - Wenn Sie ein Beispiel benötigen, können Sie in der Seitenleiste eine Beispieldatei herunterladen, um zu sehen, wie die Daten strukturiert sein sollten.
 '''
     }
 }
@@ -34,6 +40,7 @@ text = texts[language]
 example_data = {
     "Artikel": ["001", "002", "003"],
     "Name": ["Milch 1L", "Butter 250g", "Käse 500g"],
+    "Woche": [1, 2, 3],
     "Menge": [100, 150, 200]
 }
 example_df = pd.DataFrame(example_data)
@@ -59,7 +66,7 @@ if uploaded_file:
                 df = pd.ExcelFile(uploaded_file).parse(0)
 
             # Validate required columns
-            required_columns = {"Artikel", "Name", "Menge"}
+            required_columns = {"Artikel", "Woche", "Menge", "Name"}
             if not required_columns.issubset(df.columns):
                 st.error(text["error_missing_columns"])
             else:
@@ -93,4 +100,7 @@ st.markdown("---")
 st.markdown(
     "⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien. "
     "Alle Verarbeitungen erfolgen lokal auf Ihrem Gerät oder auf dem temporären Streamlit-Server."
+)
+st.markdown(
+    "🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**"
 )
