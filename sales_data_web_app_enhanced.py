@@ -18,7 +18,6 @@ texts = {
         "download": "Laden Sie die Ergebnisse herunter",
         "example_file": "Laden Sie eine Beispieldatei herunter",
         "instructions": "Anleitung anzeigen",
-        "back_to_main": "Zurück zur Hauptseite",
         "instructions_text": '''
 ### Anleitung zur Nutzung dieser App
 1. Bereiten Sie Ihre Abverkaufsdaten vor:
@@ -35,29 +34,28 @@ texts = {
 }
 text = texts[language]
 
-# Example File
+# Example File with realistic data
 example_data = {
-    "Artikel": ["001", "002", "003"],
-    "Name": ["Milch 1L", "Butter 250g", "Käse 500g"],
-    "Woche": [1, 2, 3],
-    "Menge": [100, 150, 200]
+    "Artikel": ["001", "001", "001", "002", "002", "002", "003", "003", "003"],
+    "Name": ["Milch 1L", "Milch 1L", "Milch 1L", "Butter 250g", "Butter 250g", "Butter 250g", "Käse 500g", "Käse 500g", "Käse 500g"],
+    "Woche": [1, 2, 3, 1, 2, 3, 1, 2, 3],
+    "Menge": [100, 120, 110, 150, 140, 160, 200, 210, 190]
 }
 example_df = pd.DataFrame(example_data)
 example_file = BytesIO()
 example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
 
-# Navigation state
-page = st.sidebar.radio("Navigation", [text["instructions"], "Hauptseite"])
+# Navigation
+page = st.sidebar.radio("Navigation", ["Hauptseite", text["instructions"], "Anleitung und App"])
 
-if page == text["instructions"]:
-    st.markdown(text["instructions_text"])
-    if st.sidebar.button(text["back_to_main"]):
-        page = "Hauptseite"
-
-if page == "Hauptseite":
+if page == "Hauptseite" or page == "Anleitung und App":
     st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
 
+if page == text["instructions"] or page == "Anleitung und App":
+    st.markdown(text["instructions_text"])
+
+if page == "Hauptseite" or page == "Anleitung und App":
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
