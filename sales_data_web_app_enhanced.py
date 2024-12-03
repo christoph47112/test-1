@@ -7,7 +7,7 @@ from io import BytesIO
 st.set_page_config(page_title="Abverkaufsmengen Berechnung", layout="wide")
 st.title("Berechnung der ∅ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
 
-st.sidebar.title("Optionen")
+# Sidebar options
 language = st.sidebar.selectbox("Sprache", ["Deutsch"])
 texts = {
     "Deutsch": {
@@ -18,19 +18,18 @@ texts = {
         "download": "Laden Sie die Ergebnisse herunter",
         "example_file": "Laden Sie eine Beispieldatei herunter",
         "instructions": "Anleitung anzeigen",
+        "back_to_main": "Zurück zur Hauptseite",
         "instructions_text": '''
 ### Anleitung zur Nutzung dieser App
 1. Bereiten Sie Ihre Abverkaufsdaten vor:
    - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
-   - Sie können die Datei im Excel- oder CSV-Format speichern.
-2. Laden Sie Ihre Datei in die App hoch:
+   - Speichern Sie die Datei im Excel- oder CSV-Format.
+2. Laden Sie Ihre Datei hoch:
    - Nutzen Sie die Schaltfläche „Durchsuchen“ und wählen Sie Ihre Datei aus.
 3. Überprüfen Sie die berechneten Ergebnisse:
    - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
 4. Laden Sie die Ergebnisse herunter:
    - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
-5. Beispiel:
-   - Wenn Sie ein Beispiel benötigen, können Sie in der Seitenleiste eine Beispieldatei herunterladen, um zu sehen, wie die Daten strukturiert sein sollten.
 '''
     }
 }
@@ -47,59 +46,64 @@ example_df = pd.DataFrame(example_data)
 example_file = BytesIO()
 example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
-st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
 
-# Display Instructions
-if st.sidebar.button(text["instructions"]):
+# Navigation state
+page = st.sidebar.radio("Navigation", [text["instructions"], "Hauptseite"])
+
+if page == text["instructions"]:
     st.markdown(text["instructions_text"])
+    if st.sidebar.button(text["back_to_main"]):
+        page = "Hauptseite"
 
-# File Uploader
-uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
+if page == "Hauptseite":
+    st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
 
-if uploaded_file:
-    with st.spinner(text["file_processing"]):
-        try:
-            # File Handling
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.ExcelFile(uploaded_file).parse(0)
+    # File Uploader
+    uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
-            # Validate required columns
-            required_columns = {"Artikel", "Woche", "Menge", "Name"}
-            if not required_columns.issubset(df.columns):
-                st.error(text["error_missing_columns"])
-            else:
-                # Calculate average sales
-                average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
-                average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
+    if uploaded_file:
+        with st.spinner(text["file_processing"]):
+            try:
+                # File Handling
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                else:
+                    df = pd.ExcelFile(uploaded_file).parse(0)
 
-                # Merge with original data for sorting
-                sorted_sales = df[['Artikel', 'Name']].drop_duplicates().merge(
-                    average_sales, on='Artikel', how='left'
-                )
+                # Validate required columns
+                required_columns = {"Artikel", "Woche", "Menge", "Name"}
+                if not required_columns.issubset(df.columns):
+                    st.error(text["error_missing_columns"])
+                else:
+                    # Calculate average sales
+                    average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
+                    average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
 
-                # Display Results
-                st.subheader(text["results"])
-                st.dataframe(sorted_sales)
+                    # Merge with original data for sorting
+                    sorted_sales = df[['Artikel', 'Name']].drop_duplicates().merge(
+                        average_sales, on='Artikel', how='left'
+                    )
 
-                # Optimized Performance: Allow result caching
-                @st.cache_data
-                def convert_df(df):
-                    output = BytesIO()
-                    df.to_excel(output, index=False, engine='openpyxl')
-                    output.seek(0)
-                    return output
+                    # Display Results
+                    st.subheader(text["results"])
+                    st.dataframe(sorted_sales)
 
-                output_file = convert_df(sorted_sales)
-                st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
-        except Exception as e:
-            st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
+                    # Optimized Performance: Allow result caching
+                    @st.cache_data
+                    def convert_df(df):
+                        output = BytesIO()
+                        df.to_excel(output, index=False, engine='openpyxl')
+                        output.seek(0)
+                        return output
+
+                    output_file = convert_df(sorted_sales)
+                    st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
+            except Exception as e:
+                st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
 st.markdown("---")
 st.markdown(
-    "⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien. "
-    "Alle Verarbeitungen erfolgen lokal auf Ihrem Gerät oder auf dem temporären Streamlit-Server."
+    "⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten."
 )
 st.markdown(
     "🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**"
