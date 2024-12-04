@@ -50,7 +50,7 @@ example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
 
 # Navigation
-page = st.sidebar.radio("Navigation", ["Mainpage", text["instructions"]])
+page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
 
 # App + Anleitung toggle
 show_app_in_instructions = False
@@ -63,16 +63,24 @@ if page == text["instructions"]:
         show_app_in_instructions = True
 
     st.markdown("---")
-    st.markdown(
-        "⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten."
+    st.sidebar.download_button(
+        label=text["example_file"],
+        data=example_file,
+        file_name="beispiel_abverkauf_anleitung.xlsx",
+        key="anleitung_example_download"
     )
-    st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
     st.markdown("---")
+    st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
 
-# Show App if toggle is active or if on Mainpage
-if page == "Mainpage" or show_app_in_instructions:
-    st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
+# Show App if toggle is active or if on Modul
+if page == "Modul" or show_app_in_instructions:
+    st.sidebar.download_button(
+        label=text["example_file"],
+        data=example_file,
+        file_name="beispiel_abverkauf_modul.xlsx",
+        key="modul_example_download"
+    )
 
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
@@ -134,4 +142,7 @@ if page == "Mainpage" or show_app_in_instructions:
             except Exception as e:
                 st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
-st.markdown("---")
+    # Add Credits and Disclaimer on Modul page
+    st.markdown("---")
+    st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
+    st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
