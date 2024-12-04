@@ -47,8 +47,13 @@ if navigation == "Modul":
     if uploaded_file:
         # Excel-Datei laden und verarbeiten
         data = pd.ExcelFile(uploaded_file)
-        sheet_name = data.sheet_names[0]  # Nimmt an, dass das erste Blatt relevant ist
+        sheet_name = st.sidebar.selectbox("Wählen Sie das Blatt aus", data.sheet_names)  # Blattauswahl ermöglichen
         df = data.parse(sheet_name)
+
+        # Filter- und Suchmöglichkeiten
+        artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
+        if artikel_filter:
+            df = df[df['Artikel'].str.contains(artikel_filter, case=False, na=False)]
 
         # Daten verarbeiten
         result = process_sales_data(df)
@@ -82,6 +87,26 @@ if navigation == "Modul":
                 file_name="durchschnittliche_abverkaeufe.csv"
             )
 
+        # Vergleich von Ergebnissen ermöglichen
+        if st.checkbox("Vergleiche mit einer anderen Datei anzeigen"):
+            uploaded_file_compare = st.file_uploader("Vergleichsdatei hochladen (Excel)", type=["xlsx"], key="compare")
+            if uploaded_file_compare:
+                compare_data = pd.ExcelFile(uploaded_file_compare)
+                compare_sheet_name = st.sidebar.selectbox("Wählen Sie das Vergleichsblatt aus", compare_data.sheet_names)
+                compare_df = compare_data.parse(compare_sheet_name)
+
+                # Daten verarbeiten
+                compare_result = process_sales_data(compare_df)
+
+                # Ergebnisse anzeigen
+                st.subheader("Vergleichsergebnisse")
+                st.dataframe(compare_result)
+
+                # Ergebnisse der beiden Dateien nebeneinander anzeigen
+                st.subheader("Vergleich der beiden Dateien")
+                merged_results = result.merge(compare_result, on='Artikel', suffixes=('_Original', '_Vergleich'))
+                st.dataframe(merged_results)
+
     # Credits und Datenschutz
     st.markdown("---")
     st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
@@ -96,10 +121,14 @@ elif navigation == "Anleitung":
        - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
        - Speichern Sie die Datei im Excel-Format.
     2. Laden Sie Ihre Datei hoch:
-       - Nutzen Sie die Schaltfläche **„Browse files“**, um Ihre Datei auszuwählen.
+       - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
-    4. Laden Sie die Ergebnisse herunter:
+    4. Filtern und suchen Sie die Ergebnisse:
+       - Nutzen Sie das Filterfeld in der Seitenleiste, um nach bestimmten Artikeln zu suchen.
+    5. Vergleichen Sie die Ergebnisse:
+       - Laden Sie eine zweite Datei hoch, um die Ergebnisse miteinander zu vergleichen.
+    6. Laden Sie die Ergebnisse herunter:
        - Nutzen Sie die Schaltfläche **„Ergebnisse herunterladen“**, um die berechneten Daten zu speichern.
 
     ---
