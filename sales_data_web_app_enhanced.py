@@ -60,7 +60,7 @@ if navigation == "Modul":
             # Filter- und Suchmöglichkeiten
             artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
             if artikel_filter:
-                df = df[df['Artikel'].str.contains(artikel_filter, case=False, na=False)]
+                df = df[df['Artikel'].astype(str).str.contains(artikel_filter, case=False, na=False)]
 
             # Daten verarbeiten
             result = process_sales_data(df)
