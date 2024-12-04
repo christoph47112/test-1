@@ -140,9 +140,9 @@ elif navigation == "Anleitung":
        - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
-    4. Filtern und suchen Sie die Ergebnisse:
+    4. Filtern und suchen Sie die Ergebnisse (optional):
        - Nutzen Sie das Filterfeld in der Seitenleiste, um nach bestimmten Artikeln zu suchen.
-    5. Vergleichen Sie die Ergebnisse:
+    5. Vergleichen Sie die Ergebnisse (optional):
        - Laden Sie eine zweite Datei hoch, um die Ergebnisse miteinander zu vergleichen.
     6. Laden Sie die Ergebnisse herunter:
        - Nutzen Sie die Schaltfläche **„Ergebnisse herunterladen“**, um die berechneten Daten zu speichern.
