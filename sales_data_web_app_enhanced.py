@@ -54,7 +54,7 @@ if navigation == "Modul":
         required_columns = {"Artikel", "Woche", "Menge", "Name"}
         if not required_columns.issubset(df.columns):
             st.error("Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.")
-        elif df[required_columns].isnull().values.any():
+        elif any(col not in df.columns for col in required_columns) or df[required_columns.intersection(df.columns)].isnull().values.any():
             st.error("Fehler: Die Datei enthält fehlende Werte. Bitte stellen Sie sicher, dass alle Zellen ausgefüllt sind.")
         else:
             # Filter- und Suchmöglichkeiten
