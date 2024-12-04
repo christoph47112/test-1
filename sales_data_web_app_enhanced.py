@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 from io import BytesIO
@@ -17,7 +16,9 @@ texts = {
         "results": "Ergebnisse",
         "download": "Laden Sie die Ergebnisse herunter",
         "example_file": "Laden Sie eine Beispieldatei herunter",
-        "instructions": "Anleitung anzeigen",
+        "export_format": "Wählen Sie das Exportformat:",
+        "recommended": "Empfohlen: Excel",
+        "instructions": "Anleitung",
         "instructions_text": '''
 ### Anleitung zur Nutzung dieser App
 1. Bereiten Sie Ihre Abverkaufsdaten vor:
@@ -27,7 +28,9 @@ texts = {
    - Nutzen Sie die Schaltfläche „Durchsuchen“ und wählen Sie Ihre Datei aus.
 3. Überprüfen Sie die berechneten Ergebnisse:
    - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
-4. Laden Sie die Ergebnisse herunter:
+4. Wählen Sie das gewünschte Exportformat:
+   - Standardmäßig wird Excel empfohlen.
+5. Laden Sie die Ergebnisse herunter:
    - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
 '''
     }
@@ -47,15 +50,19 @@ example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
 
 # Navigation
-page = st.sidebar.radio("Navigation", ["Hauptseite", text["instructions"], "Anleitung und App"])
+page = st.sidebar.radio("Navigation", ["Mainpage", text["instructions"]])
 
-if page == "Hauptseite" or page == "Anleitung und App":
+if page == text["instructions"]:
+    st.markdown(text["instructions_text"])
+    st.markdown("---")
+    st.markdown("⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten.")
+    st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
+    st.markdown("---")
+    st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
+
+if page == "Mainpage":
     st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
 
-if page == text["instructions"] or page == "Anleitung und App":
-    st.markdown(text["instructions_text"])
-
-if page == "Hauptseite" or page == "Anleitung und App":
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
@@ -86,16 +93,33 @@ if page == "Hauptseite" or page == "Anleitung und App":
                     st.subheader(text["results"])
                     st.dataframe(sorted_sales)
 
-                    # Optimized Performance: Allow result caching
-                    @st.cache_data
-                    def convert_df(df):
-                        output = BytesIO()
-                        df.to_excel(output, index=False, engine='openpyxl')
-                        output.seek(0)
-                        return output
+                    # Export Format Selection
+                    st.subheader(text["export_format"])
+                    export_format = st.radio(
+                        "Wählen Sie ein Format für den Export:",
+                        ["Excel (empfohlen)", "CSV"],
+                        index=0
+                    )
+                    st.markdown(f"**{text['recommended']}**")
 
-                    output_file = convert_df(sorted_sales)
-                    st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
+                    # Export Results
+                    if export_format == "Excel (empfohlen)":
+                        @st.cache_data
+                        def convert_to_excel(df):
+                            output = BytesIO()
+                            df.to_excel(output, index=False, engine='openpyxl')
+                            output.seek(0)
+                            return output
+
+                        output_file = convert_to_excel(sorted_sales)
+                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
+                    elif export_format == "CSV":
+                        @st.cache_data
+                        def convert_to_csv(df):
+                            return df.to_csv(index=False).encode('utf-8')
+
+                        output_file = convert_to_csv(sorted_sales)
+                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.csv")
             except Exception as e:
                 st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
