@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 from io import BytesIO
@@ -53,19 +52,20 @@ example_file.seek(0)
 # Navigation
 page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
 
-# Toggle state
-toggle_state = st.session_state.get("show_app", False)
+# Toggle state using session state for single-click functionality
+if "show_app" not in st.session_state:
+    st.session_state["show_app"] = False
 
 if page == text["instructions"]:
     st.markdown(text["instructions_text"])
 
     # Toggle buttons for App and Anleitung
-    if toggle_state:
+    if not st.session_state["show_app"]:
+        if st.button("Modul benutzen und Anleitung angezeigt bekommen"):
+            st.session_state["show_app"] = True
+    else:
         if st.button("Nur Anleitung anzeigen"):
             st.session_state["show_app"] = False
-    else:
-        if st.button("Modul nutzen und Anleitung"):
-            st.session_state["show_app"] = True
 
     st.sidebar.download_button(
         label=text["example_file"],
@@ -75,12 +75,12 @@ if page == text["instructions"]:
     )
 
     st.markdown("---")
-    if not toggle_state:
+    if not st.session_state["show_app"]:
         st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
         st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
 
 # Show App functionality if on Modul or toggled in Anleitung
-if page == "Modul" or toggle_state:
+if page == "Modul" or st.session_state["show_app"]:
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
