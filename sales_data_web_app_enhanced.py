@@ -49,31 +49,38 @@ example_file = BytesIO()
 example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
 
-# Initialize session state for toggle
+# Navigation
+page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
+
+# Toggle state using session state for single-click functionality
 if "show_app" not in st.session_state:
     st.session_state["show_app"] = False
 
-# Display Anleitung or App based on toggle
-if st.session_state["show_app"]:
-    st.sidebar.markdown(text["instructions_text"])
-    button_text = "Nur Anleitung anzeigen"
-else:
-    st.sidebar.markdown(text["instructions_text"])
-    button_text = "Modul benutzen und Anleitung angezeigt bekommen"
+if page == text["instructions"]:
+    st.markdown(text["instructions_text"])
 
-if st.sidebar.button(button_text):
-    st.session_state["show_app"] = not st.session_state["show_app"]
+    # Dynamically update button text based on state
+    button_text = (
+        "Nur Anleitung anzeigen" if st.session_state["show_app"] else "Modul benutzen und Anleitung angezeigt bekommen"
+    )
+    if st.button(button_text):
+        st.session_state["show_app"] = not st.session_state["show_app"]
+        st.experimental_rerun()  # Force re-render to update the button text
 
-# Example file download
-st.sidebar.download_button(
-    label=text["example_file"],
-    data=example_file,
-    file_name="beispiel_abverkauf.xlsx",
-    key="example_download"
-)
+    st.sidebar.download_button(
+        label=text["example_file"],
+        data=example_file,
+        file_name="beispiel_abverkauf.xlsx",
+        key="example_download"
+    )
 
-# Display App functionality if toggle is active
-if st.session_state["show_app"]:
+    st.markdown("---")
+    if not st.session_state["show_app"]:
+        st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
+        st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
+
+# Show App functionality if on Modul or toggled in Anleitung
+if page == "Modul" or st.session_state["show_app"]:
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
