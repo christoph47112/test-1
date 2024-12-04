@@ -52,36 +52,25 @@ example_file.seek(0)
 # Navigation
 page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
 
-# App + Anleitung toggle
+# Flag to determine if App and Anleitung should be shown
 show_app_in_instructions = False
 
 if page == text["instructions"]:
     st.markdown(text["instructions_text"])
-
-    # Toggle button for App + Anleitung
     if st.button("App und Anleitung anzeigen"):
         show_app_in_instructions = True
-
-    st.markdown("---")
     st.sidebar.download_button(
         label=text["example_file"],
         data=example_file,
-        file_name="beispiel_abverkauf_anleitung.xlsx",
-        key="anleitung_example_download"
+        file_name="beispiel_abverkauf.xlsx",
+        key="example_download"
     )
     st.markdown("---")
     st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
 
-# Show App if toggle is active or if on Modul
+# Show App functionality if on Modul or toggled in Anleitung
 if page == "Modul" or show_app_in_instructions:
-    st.sidebar.download_button(
-        label=text["example_file"],
-        data=example_file,
-        file_name="beispiel_abverkauf_modul.xlsx",
-        key="modul_example_download"
-    )
-
     # File Uploader
     uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
 
@@ -142,7 +131,7 @@ if page == "Modul" or show_app_in_instructions:
             except Exception as e:
                 st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
-    # Add Credits and Disclaimer on Modul page
+    # Credits and Disclaimer
     st.markdown("---")
     st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
