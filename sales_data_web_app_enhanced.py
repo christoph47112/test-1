@@ -52,15 +52,26 @@ example_file.seek(0)
 # Navigation
 page = st.sidebar.radio("Navigation", ["Mainpage", text["instructions"]])
 
+# App + Anleitung toggle
+show_app_in_instructions = False
+
 if page == text["instructions"]:
     st.markdown(text["instructions_text"])
+
+    # Toggle button for App + Anleitung
+    if st.button("App und Anleitung anzeigen"):
+        show_app_in_instructions = True
+
     st.markdown("---")
-    st.markdown("⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten.")
+    st.markdown(
+        "⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten."
+    )
     st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
     st.markdown("---")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
 
-if page == "Mainpage":
+# Show App if toggle is active or if on Mainpage
+if page == "Mainpage" or show_app_in_instructions:
     st.sidebar.download_button(label=text["example_file"], data=example_file, file_name="beispiel_abverkauf.xlsx")
 
     # File Uploader
@@ -124,9 +135,3 @@ if page == "Mainpage":
                 st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
 st.markdown("---")
-st.markdown(
-    "⚠️ **Hinweis:** Eine Beispieldatei kann in der Seitenleiste heruntergeladen werden, um zu sehen, wie die Daten strukturiert sein sollten."
-)
-st.markdown(
-    "🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**"
-)
