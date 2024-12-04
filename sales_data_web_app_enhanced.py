@@ -29,10 +29,6 @@ st.sidebar.download_button(
 
 # Navigation auswerten
 if st.session_state.navigation == "Hauptseite":
-    # Hauptseite anzeigen
-    st.subheader("Willkommen auf der Hauptseite")
-    st.write("Hier können Sie Ihre Abverkaufsdaten hochladen und analysieren.")
-
     # Datei-Uploader
     uploaded_file = st.file_uploader("Bitte laden Sie Ihre Datei hoch (Excel oder CSV)", type=["xlsx", "csv"])
 
@@ -99,11 +95,11 @@ elif st.session_state.navigation == "Anleitung":
        - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
        - Speichern Sie die Datei im Excel- oder CSV-Format.
     2. Laden Sie Ihre Datei hoch:
-       - Nutzen Sie die Schaltfläche „Durchsuchen“ und wählen Sie Ihre Datei aus.
+       - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
     4. Wählen Sie das gewünschte Exportformat:
        - Standardmäßig wird Excel empfohlen.
     5. Laden Sie die Ergebnisse herunter:
-       - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
+       - Nutzen Sie die Schaltfläche **„Ergebnisse herunterladen“**, um die berechneten Daten zu speichern.
     """)
