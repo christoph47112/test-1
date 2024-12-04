@@ -75,7 +75,6 @@ page = st.sidebar.radio("Navigation", ["Hauptseite", text["instructions"]])
 if page == "Hauptseite":
     st.subheader("Willkommen auf der Hauptseite")
     st.write("Hier können Sie Ihre Abverkaufsdaten hochladen und analysieren.")
-    # Platz für weiteren Hauptseiteninhalt
 
 # Anleitung anzeigen
 elif page == text["instructions"]:
@@ -87,6 +86,7 @@ elif page == text["instructions"]:
         "Nur Anleitung anzeigen" if st.session_state["show_module"] else "Modul benutzen und Anleitung anzeigen"
     ):
         st.session_state["show_module"] = not st.session_state["show_module"]
+        st.experimental_rerun()  # Sofortige Neurenderung nach Zustand-Update
 
     # Beispieldatei Download
     example_data = {
