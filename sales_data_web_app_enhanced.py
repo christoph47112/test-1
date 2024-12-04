@@ -3,8 +3,8 @@ import streamlit as st
 from io import BytesIO
 
 # Title and Page Layout
-st.set_page_config(page_title="Berechnung der ∅ Abverkaufsmengen", layout="wide")
-st.title("Berechnung der ∅ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
+st.set_page_config(page_title="Berechnung der ∆ Abverkaufsmengen", layout="wide")
+st.title("Berechnung der ∆ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
 
 # Beispieldatei vorbereiten
 example_data = {
@@ -81,7 +81,7 @@ elif navigation == "Anleitung":
        - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
        - Speichern Sie die Datei im Excel-Format.
     2. Laden Sie Ihre Datei hoch:
-       - Nutzen Sie die Schaltfläche **„Browse files“**, um Ihre Datei auszuwählen.
+       - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
     4. Laden Sie die Ergebnisse herunter:
