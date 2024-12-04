@@ -65,7 +65,6 @@ if page == text["instructions"]:
     )
     if st.button(button_text):
         st.session_state["show_app"] = not st.session_state["show_app"]
-        st.experimental_rerun()  # Immediately re-run the app to reflect the new state
 
     st.sidebar.download_button(
         label=text["example_file"],
