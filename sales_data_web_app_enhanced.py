@@ -75,13 +75,14 @@ page = st.sidebar.radio("Navigation", ["Hauptseite", text["instructions"]])
 if page == "Hauptseite":
     st.subheader("Willkommen auf der Hauptseite")
     st.write("Hier können Sie Ihre Abverkaufsdaten hochladen und analysieren.")
+    # Platz für weiteren Hauptseiteninhalt
 
 # Anleitung anzeigen
 elif page == text["instructions"]:
     # Anleitung
     st.markdown(text["instructions_text"])
 
-    # Button mit sofortiger Funktionalität
+    # Button mit sofortiger Reaktion
     if st.button(
         "Nur Anleitung anzeigen" if st.session_state["show_module"] else "Modul benutzen und Anleitung anzeigen"
     ):
