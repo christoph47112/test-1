@@ -2,24 +2,16 @@ import pandas as pd
 import streamlit as st
 from io import BytesIO
 
-# Title and Sidebar
+# Title and Page Layout
 st.set_page_config(page_title="Abverkaufsmengen Berechnung", layout="wide")
 st.title("Berechnung der ∅ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
 
-# Sidebar options
-language = st.sidebar.selectbox("Sprache", ["Deutsch"])
-texts = {
-    "Deutsch": {
-        "upload_prompt": "Bitte laden Sie Ihre Datei hoch (Excel oder CSV)",
-        "file_processing": "Die Datei wird verarbeitet...",
-        "error_missing_columns": "Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.",
-        "results": "Ergebnisse",
-        "download": "Laden Sie die Ergebnisse herunter",
-        "example_file": "Laden Sie eine Beispieldatei herunter",
-        "export_format": "Wählen Sie das Exportformat:",
-        "recommended": "Empfohlen: Excel",
-        "instructions": "Anleitung",
-        "instructions_text": '''
+# Initialize session state for toggle functionality
+if "show_module" not in st.session_state:
+    st.session_state["show_module"] = False
+
+# Display Anleitung
+st.markdown("""
 ### Anleitung zur Nutzung dieser App
 1. Bereiten Sie Ihre Abverkaufsdaten vor:
    - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
@@ -32,12 +24,16 @@ texts = {
    - Standardmäßig wird Excel empfohlen.
 5. Laden Sie die Ergebnisse herunter:
    - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
-'''
-    }
-}
-text = texts[language]
+""")
 
-# Example File with realistic data
+# Add the button below the Anleitung
+button_label = (
+    "Nur Anleitung anzeigen" if st.session_state["show_module"] else "Modul benutzen und Anleitung anzeigen"
+)
+if st.button(button_label):
+    st.session_state["show_module"] = not st.session_state["show_module"]
+
+# Display example file download option below the button
 example_data = {
     "Artikel": ["001", "001", "001", "002", "002", "002", "003", "003", "003"],
     "Name": ["Milch 1L", "Milch 1L", "Milch 1L", "Butter 250g", "Butter 250g", "Butter 250g", "Käse 500g", "Käse 500g", "Käse 500g"],
@@ -49,41 +45,20 @@ example_file = BytesIO()
 example_df.to_excel(example_file, index=False, engine='openpyxl')
 example_file.seek(0)
 
-# Navigation
-page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
+st.download_button(
+    label="Beispieldatei herunterladen",
+    data=example_file,
+    file_name="beispiel_abverkauf.xlsx"
+)
 
-# Toggle state using session state for single-click functionality
-if "show_app" not in st.session_state:
-    st.session_state["show_app"] = False
-
-if page == text["instructions"]:
-    st.markdown(text["instructions_text"])
-
-    # Dynamically update button text and function based on state
-    if st.sidebar.button(
-        "Nur Anleitung anzeigen" if st.session_state["show_app"] else "Modul benutzen und Anleitung anzeigen"
-    ):
-        st.session_state["show_app"] = not st.session_state["show_app"]
-
-    st.sidebar.download_button(
-        label=text["example_file"],
-        data=example_file,
-        file_name="beispiel_abverkauf.xlsx",
-        key="example_download"
-    )
-
-    st.markdown("---")
-    if not st.session_state["show_app"]:
-        st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
-        st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
-
-# Show App functionality if on Modul or toggled in Anleitung
-if page == "Modul" or st.session_state["show_app"]:
+# Display the module if the toggle is enabled
+if st.session_state["show_module"]:
+    st.subheader("Modul")
     # File Uploader
-    uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
+    uploaded_file = st.file_uploader("Bitte laden Sie Ihre Datei hoch (Excel oder CSV)", type=["xlsx", "csv"])
 
     if uploaded_file:
-        with st.spinner(text["file_processing"]):
+        with st.spinner("Die Datei wird verarbeitet..."):
             try:
                 # File Handling
                 if uploaded_file.name.endswith('.csv'):
@@ -94,7 +69,7 @@ if page == "Modul" or st.session_state["show_app"]:
                 # Validate required columns
                 required_columns = {"Artikel", "Woche", "Menge", "Name"}
                 if not required_columns.issubset(df.columns):
-                    st.error(text["error_missing_columns"])
+                    st.error("Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.")
                 else:
                     # Calculate average sales
                     average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
@@ -106,17 +81,16 @@ if page == "Modul" or st.session_state["show_app"]:
                     )
 
                     # Display Results
-                    st.subheader(text["results"])
+                    st.subheader("Ergebnisse")
                     st.dataframe(sorted_sales)
 
                     # Export Format Selection
-                    st.subheader(text["export_format"])
+                    st.subheader("Wählen Sie das Exportformat:")
                     export_format = st.radio(
-                        "Wählen Sie ein Format für den Export:",
+                        "Exportformat auswählen:",
                         ["Excel (empfohlen)", "CSV"],
                         index=0
                     )
-                    st.markdown(f"**{text['recommended']}**")
 
                     # Export Results
                     if export_format == "Excel (empfohlen)":
@@ -128,18 +102,18 @@ if page == "Modul" or st.session_state["show_app"]:
                             return output
 
                         output_file = convert_to_excel(sorted_sales)
-                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
+                        st.download_button("Ergebnisse herunterladen", data=output_file, file_name="ergebnisse.xlsx")
                     elif export_format == "CSV":
                         @st.cache_data
                         def convert_to_csv(df):
                             return df.to_csv(index=False).encode('utf-8')
 
                         output_file = convert_to_csv(sorted_sales)
-                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.csv")
+                        st.download_button("Ergebnisse herunterladen", data=output_file, file_name="ergebnisse.csv")
             except Exception as e:
                 st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
 
-    # Credits and Disclaimer
+    # Disclaimer and Credits
     st.markdown("---")
     st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
