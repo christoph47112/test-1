@@ -1,18 +1,14 @@
+
 import pandas as pd
 import streamlit as st
 from io import BytesIO
 
-# Title and Page Layout
-st.set_page_config(page_title="Berechnung der ∅ Abverkaufsmengen", layout="wide")
+# Title and Sidebar
+st.set_page_config(page_title="Abverkaufsmengen Berechnung", layout="wide")
 st.title("Berechnung der ∅ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
 
-# Initialize session state for toggle functionality
-if "show_module" not in st.session_state:
-    st.session_state["show_module"] = False
-
-# Sidebar: Sprachauswahl
-language = st.sidebar.selectbox("Sprache", ["Deutsch", "Englisch"])
-
+# Sidebar options
+language = st.sidebar.selectbox("Sprache", ["Deutsch"])
 texts = {
     "Deutsch": {
         "upload_prompt": "Bitte laden Sie Ihre Datei hoch (Excel oder CSV)",
@@ -24,7 +20,7 @@ texts = {
         "export_format": "Wählen Sie das Exportformat:",
         "recommended": "Empfohlen: Excel",
         "instructions": "Anleitung",
-        "instructions_text": """
+        "instructions_text": '''
 ### Anleitung zur Nutzung dieser App
 1. Bereiten Sie Ihre Abverkaufsdaten vor:
    - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
@@ -37,127 +33,115 @@ texts = {
    - Standardmäßig wird Excel empfohlen.
 5. Laden Sie die Ergebnisse herunter:
    - Nutzen Sie die Schaltfläche „Laden Sie die Ergebnisse herunter“, um die berechneten Daten zu speichern.
-"""
-    },
-    "Englisch": {
-        "upload_prompt": "Please upload your file (Excel or CSV)",
-        "file_processing": "Processing the file...",
-        "error_missing_columns": "Error: The file must contain the columns 'Artikel', 'Woche', 'Menge', and 'Name'.",
-        "results": "Results",
-        "download": "Download the results",
-        "example_file": "Download an example file",
-        "export_format": "Select the export format:",
-        "recommended": "Recommended: Excel",
-        "instructions": "Instructions",
-        "instructions_text": """
-### How to use this app
-1. Prepare your sales data:
-   - The file must contain the columns **'Artikel', 'Woche', 'Menge' (in units), and 'Name'**.
-   - Save the file in Excel or CSV format.
-2. Upload your file:
-   - Use the “Browse” button to select your file.
-3. Check the calculated results:
-   - The app will show the average weekly sales per article.
-4. Choose the desired export format:
-   - By default, Excel is recommended.
-5. Download the results:
-   - Use the “Download the results” button to save the calculated data.
-"""
-    },
+'''
+    }
 }
-
 text = texts[language]
 
+# Example File with realistic data
+example_data = {
+    "Artikel": ["001", "001", "001", "002", "002", "002", "003", "003", "003"],
+    "Name": ["Milch 1L", "Milch 1L", "Milch 1L", "Butter 250g", "Butter 250g", "Butter 250g", "Käse 500g", "Käse 500g", "Käse 500g"],
+    "Woche": [1, 2, 3, 1, 2, 3, 1, 2, 3],
+    "Menge": [100, 120, 110, 150, 140, 160, 200, 210, 190]
+}
+example_df = pd.DataFrame(example_data)
+example_file = BytesIO()
+example_df.to_excel(example_file, index=False, engine='openpyxl')
+example_file.seek(0)
+
 # Navigation
-page = st.sidebar.radio("Navigation", ["Hauptseite", text["instructions"]])
+page = st.sidebar.radio("Navigation", ["Modul", text["instructions"]])
 
-# Hauptseite anzeigen
-if page == "Hauptseite":
-    st.subheader("Willkommen auf der Hauptseite")
-    st.write("Hier können Sie Ihre Abverkaufsdaten hochladen und analysieren.")
-    # Platz für weiteren Hauptseiteninhalt
+# Toggle state
+toggle_state = st.session_state.get("show_app", False)
 
-# Anleitung anzeigen
-elif page == text["instructions"]:
-    # Anleitung
+if page == text["instructions"]:
     st.markdown(text["instructions_text"])
 
-    # Button unter der Anleitung
-    button_label = (
-        "Nur Anleitung anzeigen" if st.session_state["show_module"] else "Modul benutzen und Anleitung anzeigen"
-    )
-    if st.button(button_label):
-        st.session_state["show_module"] = not st.session_state["show_module"]
+    # Toggle buttons for App and Anleitung
+    if toggle_state:
+        if st.button("Nur Anleitung anzeigen"):
+            st.session_state["show_app"] = False
+    else:
+        if st.button("Modul nutzen und Anleitung"):
+            st.session_state["show_app"] = True
 
-    # Beispieldatei Download
-    example_data = {
-        "Artikel": ["001", "001", "001", "002", "002", "002", "003", "003", "003"],
-        "Name": ["Milch 1L", "Milch 1L", "Milch 1L", "Butter 250g", "Butter 250g", "Butter 250g", "Käse 500g", "Käse 500g", "Käse 500g"],
-        "Woche": [1, 2, 3, 1, 2, 3, 1, 2, 3],
-        "Menge": [100, 120, 110, 150, 140, 160, 200, 210, 190]
-    }
-    example_df = pd.DataFrame(example_data)
-    example_file = BytesIO()
-    example_df.to_excel(example_file, index=False, engine='openpyxl')
-    example_file.seek(0)
-
-    st.download_button(
+    st.sidebar.download_button(
         label=text["example_file"],
         data=example_file,
-        file_name="beispiel_abverkauf.xlsx"
+        file_name="beispiel_abverkauf.xlsx",
+        key="example_download"
     )
 
-    # Modul anzeigen, falls aktiviert
-    if st.session_state["show_module"]:
-        st.subheader("Modul")
-        uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
-
-        if uploaded_file:
-            with st.spinner(text["file_processing"]):
-                try:
-                    if uploaded_file.name.endswith('.csv'):
-                        df = pd.read_csv(uploaded_file)
-                    else:
-                        df = pd.ExcelFile(uploaded_file).parse(0)
-
-                    required_columns = {"Artikel", "Woche", "Menge", "Name"}
-                    if not required_columns.issubset(df.columns):
-                        st.error(text["error_missing_columns"])
-                    else:
-                        average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
-                        average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
-                        sorted_sales = df[['Artikel', 'Name']].drop_duplicates().merge(
-                            average_sales, on='Artikel', how='left'
-                        )
-                        st.subheader(text["results"])
-                        st.dataframe(sorted_sales)
-
-                        export_format = st.radio(
-                            text["export_format"],
-                            ["Excel (empfohlen)", "CSV"],
-                            index=0
-                        )
-
-                        if export_format == "Excel (empfohlen)":
-                            @st.cache_data
-                            def convert_to_excel(df):
-                                output = BytesIO()
-                                df.to_excel(output, index=False, engine='openpyxl')
-                                output.seek(0)
-                                return output
-
-                            output_file = convert_to_excel(sorted_sales)
-                            st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
-                        elif export_format == "CSV":
-                            @st.cache_data
-                            def convert_to_csv(df):
-                                return df.to_csv(index=False).encode('utf-8')
-
-                            output_file = convert_to_csv(sorted_sales)
-                            st.download_button(text["download"], data=output_file, file_name="ergebnisse.csv")
-                except Exception as e:
-                    st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
-
-        st.markdown("---")
+    st.markdown("---")
+    if not toggle_state:
         st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
         st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
+
+# Show App functionality if on Modul or toggled in Anleitung
+if page == "Modul" or toggle_state:
+    # File Uploader
+    uploaded_file = st.file_uploader(text["upload_prompt"], type=["xlsx", "csv"])
+
+    if uploaded_file:
+        with st.spinner(text["file_processing"]):
+            try:
+                # File Handling
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                else:
+                    df = pd.ExcelFile(uploaded_file).parse(0)
+
+                # Validate required columns
+                required_columns = {"Artikel", "Woche", "Menge", "Name"}
+                if not required_columns.issubset(df.columns):
+                    st.error(text["error_missing_columns"])
+                else:
+                    # Calculate average sales
+                    average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
+                    average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
+
+                    # Merge with original data for sorting
+                    sorted_sales = df[['Artikel', 'Name']].drop_duplicates().merge(
+                        average_sales, on='Artikel', how='left'
+                    )
+
+                    # Display Results
+                    st.subheader(text["results"])
+                    st.dataframe(sorted_sales)
+
+                    # Export Format Selection
+                    st.subheader(text["export_format"])
+                    export_format = st.radio(
+                        "Wählen Sie ein Format für den Export:",
+                        ["Excel (empfohlen)", "CSV"],
+                        index=0
+                    )
+                    st.markdown(f"**{text['recommended']}**")
+
+                    # Export Results
+                    if export_format == "Excel (empfohlen)":
+                        @st.cache_data
+                        def convert_to_excel(df):
+                            output = BytesIO()
+                            df.to_excel(output, index=False, engine='openpyxl')
+                            output.seek(0)
+                            return output
+
+                        output_file = convert_to_excel(sorted_sales)
+                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.xlsx")
+                    elif export_format == "CSV":
+                        @st.cache_data
+                        def convert_to_csv(df):
+                            return df.to_csv(index=False).encode('utf-8')
+
+                        output_file = convert_to_csv(sorted_sales)
+                        st.download_button(text["download"], data=output_file, file_name="ergebnisse.csv")
+            except Exception as e:
+                st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
+
+    # Credits and Disclaimer
+    st.markdown("---")
+    st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
+    st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
