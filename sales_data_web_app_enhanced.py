@@ -57,7 +57,7 @@ if navigation == "Modul":
         elif df.isnull().values.any():
             st.error("Fehler: Die Datei enthält fehlende Werte. Bitte stellen Sie sicher, dass alle Zellen ausgefüllt sind.")
         else:
-            # Filter- und Suchmöglichkeiten
+                        # Filter- und Suchmöglichkeiten
             artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
             artikel_name_filter = st.sidebar.text_input("Nach Artikelname filtern (optional)")
 
@@ -66,14 +66,7 @@ if navigation == "Modul":
 
             if artikel_name_filter:
                 df = df[df['Name'].str.contains(artikel_name_filter, case=False, na=False)]
-artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
-artikel_name_filter = st.sidebar.text_input("Nach Artikelname filtern (optional)")
 
-if artikel_filter:
-    df = df[df['Artikel'].astype(str).str.contains(artikel_filter, case=False, na=False)]
-
-if artikel_name_filter:
-    df = df[df['Name'].str.contains(artikel_name_filter, case=False, na=False)]
 
             # Daten verarbeiten
             result = process_sales_data(df)
