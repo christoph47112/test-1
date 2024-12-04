@@ -82,10 +82,11 @@ elif page == text["instructions"]:
     # Anleitung
     st.markdown(text["instructions_text"])
 
-    # Button mit sofortiger Reaktion
-    if st.button(
+    # Button unter der Anleitung
+    button_label = (
         "Nur Anleitung anzeigen" if st.session_state["show_module"] else "Modul benutzen und Anleitung anzeigen"
-    ):
+    )
+    if st.button(button_label):
         st.session_state["show_module"] = not st.session_state["show_module"]
 
     # Beispieldatei Download
