@@ -20,15 +20,15 @@ example_file.seek(0)
 
 # Sidebar: Navigation und Beispieldatei
 st.sidebar.header("Menü")
-st.sidebar.radio("Navigation", ["Hauptseite", "Anleitung"], key="navigation")
+navigation = st.sidebar.radio("Navigation", ["Modul", "Anleitung"])
 st.sidebar.download_button(
     label="Beispieldatei herunterladen",
     data=example_file,
     file_name="beispiel_abverkauf.xlsx"
 )
 
-# Navigation auswerten
-if st.session_state.navigation == "Hauptseite":
+# Modul anzeigen
+if navigation == "Modul":
     # Datei-Uploader
     uploaded_file = st.file_uploader("Bitte laden Sie Ihre Datei hoch (Excel oder CSV)", type=["xlsx", "csv"])
 
@@ -87,7 +87,8 @@ if st.session_state.navigation == "Hauptseite":
     st.markdown("⚠️ **Hinweis:** Diese Anwendung speichert keine Daten und hat keinen Zugriff auf Ihre Dateien.")
     st.markdown("🌟 **Erstellt von Christoph R. Kaiser mit Hilfe von Künstlicher Intelligenz.**")
 
-elif st.session_state.navigation == "Anleitung":
+# Anleitung anzeigen
+elif navigation == "Anleitung":
     # Anleitung anzeigen
     st.markdown("""
     ### Anleitung zur Nutzung dieser App
@@ -95,7 +96,7 @@ elif st.session_state.navigation == "Anleitung":
        - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
        - Speichern Sie die Datei im Excel- oder CSV-Format.
     2. Laden Sie Ihre Datei hoch:
-       - Nutzen Sie die Schaltfläche **„Browse“** (Durchsuchen), um Ihre Datei auszuwählen.
+       - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
     4. Wählen Sie das gewünschte Exportformat:
