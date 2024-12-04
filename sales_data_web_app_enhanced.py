@@ -50,62 +50,78 @@ if navigation == "Modul":
         sheet_name = st.sidebar.selectbox("Wählen Sie das Blatt aus", data.sheet_names)  # Blattauswahl ermöglichen
         df = data.parse(sheet_name)
 
-        # Filter- und Suchmöglichkeiten
-        artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
-        if artikel_filter:
-            df = df[df['Artikel'].str.contains(artikel_filter, case=False, na=False)]
+        # Erweiterte Datenvalidierung
+        required_columns = {"Artikel", "Woche", "Menge", "Name"}
+        if not required_columns.issubset(df.columns):
+            st.error("Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.")
+        elif df[required_columns].isnull().values.any():
+            st.error("Fehler: Die Datei enthält fehlende Werte. Bitte stellen Sie sicher, dass alle Zellen ausgefüllt sind.")
+        else:
+            # Filter- und Suchmöglichkeiten
+            artikel_filter = st.sidebar.text_input("Nach Artikel filtern (optional)")
+            if artikel_filter:
+                df = df[df['Artikel'].str.contains(artikel_filter, case=False, na=False)]
 
-        # Daten verarbeiten
-        result = process_sales_data(df)
+            # Daten verarbeiten
+            result = process_sales_data(df)
 
-        # Ergebnisse anzeigen
-        st.subheader("Ergebnisse")
-        st.dataframe(result)
+            # Ergebnisse anzeigen
+            st.subheader("Ergebnisse")
+            st.dataframe(result)
 
-        # Exportformat wählen
-        export_format = st.radio(
-            "Wählen Sie das Exportformat:",
-            ["Excel (empfohlen)", "CSV"],
-            index=0
-        )
+            # Fortschrittsanzeige
+            st.info("Verarbeitung abgeschlossen. Die Ergebnisse stehen zur Verfügung.")
 
-        # Ergebnisse herunterladen
-        if export_format == "Excel (empfohlen)":
-            output = BytesIO()
-            result.to_excel(output, index=False, engine='openpyxl')
-            output.seek(0)
-            st.download_button(
-                label="Ergebnisse herunterladen",
-                data=output,
-                file_name="durchschnittliche_abverkaeufe.xlsx"
-            )
-        elif export_format == "CSV":
-            csv_output = result.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Ergebnisse herunterladen",
-                data=csv_output,
-                file_name="durchschnittliche_abverkaeufe.csv"
+            # Exportformat wählen
+            export_format = st.radio(
+                "Wählen Sie das Exportformat:",
+                ["Excel (empfohlen)", "CSV"],
+                index=0
             )
 
-        # Vergleich von Ergebnissen ermöglichen
-        if st.checkbox("Vergleiche mit einer anderen Datei anzeigen"):
-            uploaded_file_compare = st.file_uploader("Vergleichsdatei hochladen (Excel)", type=["xlsx"], key="compare")
-            if uploaded_file_compare:
-                compare_data = pd.ExcelFile(uploaded_file_compare)
-                compare_sheet_name = st.sidebar.selectbox("Wählen Sie das Vergleichsblatt aus", compare_data.sheet_names)
-                compare_df = compare_data.parse(compare_sheet_name)
+            # Ergebnisse herunterladen
+            if export_format == "Excel (empfohlen)":
+                output = BytesIO()
+                result.to_excel(output, index=False, engine='openpyxl')
+                output.seek(0)
+                st.download_button(
+                    label="Ergebnisse herunterladen",
+                    data=output,
+                    file_name="durchschnittliche_abverkaeufe.xlsx"
+                )
+            elif export_format == "CSV":
+                csv_output = result.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Ergebnisse herunterladen",
+                    data=csv_output,
+                    file_name="durchschnittliche_abverkaeufe.csv"
+                )
 
-                # Daten verarbeiten
-                compare_result = process_sales_data(compare_df)
+            # Vergleich von Ergebnissen ermöglichen
+            if st.checkbox("Vergleiche mit einer anderen Datei anzeigen"):
+                uploaded_file_compare = st.file_uploader("Vergleichsdatei hochladen (Excel)", type=["xlsx"], key="compare")
+                if uploaded_file_compare:
+                    compare_data = pd.ExcelFile(uploaded_file_compare)
+                    compare_sheet_name = st.sidebar.selectbox("Wählen Sie das Vergleichsblatt aus", compare_data.sheet_names)
+                    compare_df = compare_data.parse(compare_sheet_name)
 
-                # Ergebnisse anzeigen
-                st.subheader("Vergleichsergebnisse")
-                st.dataframe(compare_result)
+                    # Erweiterte Datenvalidierung für Vergleichsdatei
+                    if not required_columns.issubset(compare_df.columns):
+                        st.error("Fehler: Die Vergleichsdatei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.")
+                    elif compare_df[required_columns].isnull().values.any():
+                        st.error("Fehler: Die Vergleichsdatei enthält fehlende Werte. Bitte stellen Sie sicher, dass alle Zellen ausgefüllt sind.")
+                    else:
+                        # Daten verarbeiten
+                        compare_result = process_sales_data(compare_df)
 
-                # Ergebnisse der beiden Dateien nebeneinander anzeigen
-                st.subheader("Vergleich der beiden Dateien")
-                merged_results = result.merge(compare_result, on='Artikel', suffixes=('_Original', '_Vergleich'))
-                st.dataframe(merged_results)
+                        # Ergebnisse anzeigen
+                        st.subheader("Vergleichsergebnisse")
+                        st.dataframe(compare_result)
+
+                        # Ergebnisse der beiden Dateien nebeneinander anzeigen
+                        st.subheader("Vergleich der beiden Dateien")
+                        merged_results = result.merge(compare_result, on='Artikel', suffixes=('_Original', '_Vergleich'))
+                        st.dataframe(merged_results)
 
     # Credits und Datenschutz
     st.markdown("---")
