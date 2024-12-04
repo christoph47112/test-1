@@ -3,8 +3,8 @@ import streamlit as st
 from io import BytesIO
 
 # Title and Page Layout
-st.set_page_config(page_title="Berechnung der ∆ Abverkaufsmengen", layout="wide")
-st.title("Berechnung der ∆ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
+st.set_page_config(page_title="Berechnung der ∅ Abverkaufsmengen", layout="wide")
+st.title("Berechnung der ∅ Abverkaufsmengen pro Woche von Werbeartikeln zu Normalpreisen")
 
 # Beispieldatei vorbereiten
 example_data = {
@@ -57,15 +57,30 @@ if navigation == "Modul":
         st.subheader("Ergebnisse")
         st.dataframe(result)
 
-        # Ergebnisse herunterladen
-        output = BytesIO()
-        result.to_excel(output, index=False, engine='openpyxl')
-        output.seek(0)
-        st.download_button(
-            label="Ergebnisse herunterladen",
-            data=output,
-            file_name="durchschnittliche_abverkaeufe.xlsx"
+        # Exportformat wählen
+        export_format = st.radio(
+            "Wählen Sie das Exportformat:",
+            ["Excel (empfohlen)", "CSV"],
+            index=0
         )
+
+        # Ergebnisse herunterladen
+        if export_format == "Excel (empfohlen)":
+            output = BytesIO()
+            result.to_excel(output, index=False, engine='openpyxl')
+            output.seek(0)
+            st.download_button(
+                label="Ergebnisse herunterladen",
+                data=output,
+                file_name="durchschnittliche_abverkaeufe.xlsx"
+            )
+        elif export_format == "CSV":
+            csv_output = result.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Ergebnisse herunterladen",
+                data=csv_output,
+                file_name="durchschnittliche_abverkaeufe.csv"
+            )
 
     # Credits und Datenschutz
     st.markdown("---")
