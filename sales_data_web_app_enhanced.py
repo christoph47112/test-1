@@ -27,60 +27,45 @@ st.sidebar.download_button(
     file_name="beispiel_abverkauf.xlsx"
 )
 
+# Funktion zur Verarbeitung der Verkaufsdaten
+def process_sales_data(dataframe):
+    # Berechne den durchschnittlichen Abverkauf pro Artikel
+    average_sales = dataframe.groupby('Artikel')['Menge'].mean().reset_index()
+    average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
+    
+    # Behalte die ursprüngliche Reihenfolge der Artikel bei
+    sorted_sales = dataframe[['Artikel', 'Name']].drop_duplicates().merge(
+        average_sales, on='Artikel', how='left'
+    )
+    return sorted_sales
+
 # Modul anzeigen
 if navigation == "Modul":
     # Datei-Uploader
-    uploaded_file = st.file_uploader("Bitte laden Sie Ihre Datei hoch (Excel oder CSV)", type=["xlsx", "csv"])
+    uploaded_file = st.file_uploader("Bitte laden Sie Ihre Datei hoch (Excel)", type=["xlsx"])
 
     if uploaded_file:
-        with st.spinner("Die Datei wird verarbeitet..."):
-            try:
-                # Datei lesen
-                if uploaded_file.name.endswith('.csv'):
-                    df = pd.read_csv(uploaded_file)
-                else:
-                    df = pd.ExcelFile(uploaded_file).parse(0)
+        # Excel-Datei laden und verarbeiten
+        data = pd.ExcelFile(uploaded_file)
+        sheet_name = data.sheet_names[0]  # Nimmt an, dass das erste Blatt relevant ist
+        df = data.parse(sheet_name)
 
-                # Spalten prüfen
-                required_columns = {"Artikel", "Woche", "Menge", "Name"}
-                if not required_columns.issubset(df.columns):
-                    st.error("Fehler: Die Datei muss die Spalten 'Artikel', 'Woche', 'Menge' und 'Name' enthalten.")
-                else:
-                    # Durchschnitt berechnen
-                    average_sales = df.groupby('Artikel')['Menge'].mean().reset_index()
-                    average_sales.rename(columns={'Menge': 'Durchschnittliche Menge pro Woche'}, inplace=True)
+        # Daten verarbeiten
+        result = process_sales_data(df)
 
-                    # Ergebnisse anzeigen
-                    st.subheader("Ergebnisse")
-                    st.dataframe(average_sales)
+        # Ergebnisse anzeigen
+        st.subheader("Ergebnisse")
+        st.dataframe(result)
 
-                    # Exportformat auswählen
-                    export_format = st.radio(
-                        "Wählen Sie das Exportformat:",
-                        ["Excel (empfohlen)", "CSV"],
-                        index=0
-                    )
-
-                    # Datei exportieren
-                    if export_format == "Excel (empfohlen)":
-                        @st.cache_data
-                        def convert_to_excel(df):
-                            output = BytesIO()
-                            df.to_excel(output, index=False, engine='openpyxl')
-                            output.seek(0)
-                            return output
-
-                        output_file = convert_to_excel(average_sales)
-                        st.download_button("Ergebnisse herunterladen", data=output_file, file_name="ergebnisse.xlsx")
-                    elif export_format == "CSV":
-                        @st.cache_data
-                        def convert_to_csv(df):
-                            return df.to_csv(index=False).encode('utf-8')
-
-                        output_file = convert_to_csv(average_sales)
-                        st.download_button("Ergebnisse herunterladen", data=output_file, file_name="ergebnisse.csv")
-            except Exception as e:
-                st.error(f"Fehler bei der Verarbeitung der Datei: {e}")
+        # Ergebnisse herunterladen
+        output = BytesIO()
+        result.to_excel(output, index=False, engine='openpyxl')
+        output.seek(0)
+        st.download_button(
+            label="Ergebnisse herunterladen",
+            data=output,
+            file_name="durchschnittliche_abverkaeufe.xlsx"
+        )
 
     # Credits und Datenschutz
     st.markdown("---")
@@ -94,14 +79,12 @@ elif navigation == "Anleitung":
     ### Anleitung zur Nutzung dieser App
     1. Bereiten Sie Ihre Abverkaufsdaten vor:
        - Die Datei muss die Spalten **'Artikel', 'Woche', 'Menge' (in Stück) und 'Name'** enthalten.
-       - Speichern Sie die Datei im Excel- oder CSV-Format.
+       - Speichern Sie die Datei im Excel-Format.
     2. Laden Sie Ihre Datei hoch:
        - Nutzen Sie die Schaltfläche **„Durchsuchen“**, um Ihre Datei auszuwählen.
     3. Überprüfen Sie die berechneten Ergebnisse:
        - Die App zeigt die durchschnittlichen Abverkaufsmengen pro Woche an.
-    4. Wählen Sie das gewünschte Exportformat:
-       - Standardmäßig wird Excel empfohlen.
-    5. Laden Sie die Ergebnisse herunter:
+    4. Laden Sie die Ergebnisse herunter:
        - Nutzen Sie die Schaltfläche **„Ergebnisse herunterladen“**, um die berechneten Daten zu speichern.
 
     ---
