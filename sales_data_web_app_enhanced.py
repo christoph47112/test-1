@@ -59,13 +59,12 @@ if "show_app" not in st.session_state:
 if page == text["instructions"]:
     st.markdown(text["instructions_text"])
 
-    # Toggle buttons for App and Anleitung
-    if not st.session_state["show_app"]:
-        if st.button("Modul benutzen und Anleitung angezeigt bekommen"):
-            st.session_state["show_app"] = True
-    else:
-        if st.button("Nur Anleitung anzeigen"):
-            st.session_state["show_app"] = False
+    # Dynamically update button text based on state
+    button_text = (
+        "Nur Anleitung anzeigen" if st.session_state["show_app"] else "Modul benutzen und Anleitung angezeigt bekommen"
+    )
+    if st.button(button_text):
+        st.session_state["show_app"] = not st.session_state["show_app"]
 
     st.sidebar.download_button(
         label=text["example_file"],
